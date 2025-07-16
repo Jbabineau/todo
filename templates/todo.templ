@@ -1,0 +1,85 @@
+package templates
+
+import "fmt"
+
+type Todo struct {
+	ID        int
+	Text      string
+	Priority  string
+	SortOrder int
+	Completed bool
+}
+
+templ TodoApp(todos []Todo) {
+	@Layout("Todo App") {
+		<div class="todo-app">
+			<h1>Todo App</h1>
+			
+			<form hx-post="/todos" hx-target="#todo-list" hx-swap="beforeend" class="todo-form">
+				<input type="text" name="text" placeholder="Add a new todo..." required class="todo-input"/>
+				<select name="priority" class="priority-select">
+					<option value="low">Low</option>
+					<option value="medium" selected>Medium</option>
+					<option value="high">High</option>
+				</select>
+				<button type="submit" class="add-btn">Add</button>
+			</form>
+			
+			<div class="actions-bar">
+				<button 
+					hx-post="/save"
+					hx-target="#save-status"
+					class="save-btn"
+				>
+					💾 Save
+				</button>
+				<a href="/export" class="export-btn">📥 Export</a>
+				<div id="save-status" class="save-status"></div>
+			</div>
+			
+			<div 
+				id="todo-list" 
+				class="todo-list"
+				hx-post="/todos/reorder"
+				hx-trigger="end"
+				hx-include="[name='todo-order']"
+			>
+				for _, todo := range todos {
+					@TodoItem(todo)
+				}
+			</div>
+		</div>
+	}
+}
+
+templ TodoItem(todo Todo) {
+	<div 
+		class={ "todo-item", templ.KV("completed", todo.Completed) } 
+		id={ "todo-" + fmt.Sprintf("%d", todo.ID) }
+		draggable="true"
+		data-todo-id={ fmt.Sprintf("%d", todo.ID) }
+	>
+		<input 
+			type="checkbox" 
+			checked?={ todo.Completed }
+			hx-patch={ "/todos/" + fmt.Sprintf("%d", todo.ID) + "/toggle" }
+			hx-target={ "#todo-" + fmt.Sprintf("%d", todo.ID) }
+			hx-swap="outerHTML"
+			class="todo-checkbox"
+		/>
+		<div class="drag-handle">⋮⋮</div>
+		<div class="todo-content">
+			<span class="todo-text">{ todo.Text }</span>
+			<span class={ "priority-badge", "priority-" + todo.Priority }>{ todo.Priority }</span>
+		</div>
+		<input type="hidden" name="todo-order" value={ fmt.Sprintf("%d", todo.ID) }/>
+		<button 
+			hx-delete={ "/todos/" + fmt.Sprintf("%d", todo.ID) }
+			hx-target={ "#todo-" + fmt.Sprintf("%d", todo.ID) }
+			hx-swap="outerHTML"
+			class="delete-btn"
+		>
+			Delete
+		</button>
+	</div>
+}
