@@ -88,19 +88,47 @@ templ TodoApp(todos []Todo, version string) {
 				<div id="save-status" class="save-status"></div>
 			</div>
 			
-			<div 
-				id="todo-list" 
-				class="todo-list"
-				hx-post="/todos/reorder"
-				hx-trigger="end"
-				hx-include="[name='todo-order']"
-			>
-				for _, todo := range todos {
-					@TodoItem(todo)
-				}
-			</div>
+			@TabContents(todos)
 		</div>
 	}
+}
+
+templ TabContents(todos []Todo) {
+	<div class="todos-container">
+		<div class="tabs">
+			<button class="tab-button active" name="active-tab-button" onclick="showTab('active')">Active</button>
+			<button class="tab-button" name="completed-tab-button" onclick="showTab('completed')">Completed</button>
+		</div>
+		
+		<div id="tab-contents">
+					
+			<div id="active-tab" class="tab-content active">
+				<div 
+					id="todo-list" 
+					class="todo-list"
+					hx-post="/todos/reorder"
+					hx-trigger="end"
+					hx-include="[name='todo-order']"
+				>
+					for _, todo := range todos {
+						if !todo.Completed {
+							@TodoItem(todo)
+						}
+					}
+				</div>
+			</div>
+			
+			<div id="completed-tab" class="tab-content">
+				<div class="todo-list">
+					for _, todo := range todos {
+						if todo.Completed {
+							@TodoItem(todo)
+						}
+					}
+				</div>
+			</div>
+		</div>
+	</div>
 }
 
 templ TodoItem(todo Todo) {
@@ -114,8 +142,8 @@ templ TodoItem(todo Todo) {
 			type="checkbox" 
 			checked?={ todo.Completed }
 			hx-patch={ "/todos/" + fmt.Sprintf("%d", todo.ID) + "/toggle" }
-			hx-target={ "#todo-" + fmt.Sprintf("%d", todo.ID) }
-			hx-swap="outerHTML"
+			hx-target=".todos-container"
+			hx-swap="innerHTML"
 			class="todo-checkbox"
 		/>
 		<div class="drag-handle">⋮⋮</div>
