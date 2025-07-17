@@ -6,7 +6,11 @@
       "Bash(go install:*)",
       "Bash(mkdir:*)",
       "Bash(templ generate:*)",
-      "Bash(go build:*)"
+      "Bash(go build:*)",
+      "Bash(go generate:*)",
+      "Bash(go mod:*)",
+      "Bash(~/go/bin/templ generate)",
+      "Bash(git rm:*)"
     ],
     "deny": []
   }

@@ -34,8 +34,15 @@ h1 {
 
 .todo-form {
     display: flex;
-    gap: 0.5rem;
+    flex-direction: column;
+    gap: 0.75rem;
     margin-bottom: 2rem;
+}
+
+.form-row {
+    display: flex;
+    gap: 0.5rem;
+    align-items: center;
 }
 
 .todo-input {
@@ -61,6 +68,8 @@ h1 {
     font-size: 1rem;
     cursor: pointer;
     transition: background-color 0.3s ease;
+    width: 100%;
+    font-weight: 600;
 }
 
 .add-btn:hover {
@@ -149,6 +158,110 @@ h1 {
 }
 
 .priority-select:focus {
+    outline: none;
+    border-color: #3498db;
+}
+
+.due-date-input {
+    padding: 0.75rem;
+    border: 2px solid #e1e8ed;
+    border-radius: 6px;
+    font-size: 1rem;
+    background-color: white;
+    cursor: pointer;
+    transition: border-color 0.3s ease;
+    color: #6c757d;
+}
+
+.due-date-input:focus {
+    outline: none;
+    border-color: #3498db;
+    color: #333;
+}
+
+.todo-meta {
+    display: flex;
+    gap: 0.25rem;
+    align-items: center;
+    flex-wrap: wrap;
+}
+
+.due-date-badge {
+    font-size: 0.75rem;
+    padding: 0.2rem 0.5rem;
+    border-radius: 12px;
+    font-weight: 600;
+    width: fit-content;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.25rem;
+}
+
+.due-date-badge.overdue {
+    background-color: #fee2e2;
+    color: #dc2626;
+    border: 1px solid #fecaca;
+}
+
+.due-date-badge.due-today {
+    background-color: #fef3c7;
+    color: #d97706;
+    border: 1px solid #fed7aa;
+}
+
+.due-date-badge.due-soon {
+    background-color: #e0f2fe;
+    color: #0369a1;
+    border: 1px solid #bae6fd;
+}
+
+.due-date-badge.due-later {
+    background-color: #f0f9ff;
+    color: #0284c7;
+    border: 1px solid #e0f2fe;
+}
+
+.category-badge {
+    font-size: 0.75rem;
+    padding: 0.2rem 0.5rem;
+    border-radius: 12px;
+    font-weight: 600;
+    width: fit-content;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.25rem;
+    background-color: #f3e8ff;
+    color: #7c3aed;
+    border: 1px solid #e9d5ff;
+    margin: 0.05rem 0;
+    white-space: nowrap;
+}
+
+.category-input {
+    padding: 0.75rem;
+    border: 2px solid #e1e8ed;
+    border-radius: 6px;
+    font-size: 1rem;
+    background-color: white;
+    transition: border-color 0.3s ease;
+    min-width: 120px;
+}
+
+.category-input:focus {
+    outline: none;
+    border-color: #3498db;
+}
+
+.edit-category-input {
+    padding: 0.5rem;
+    border: 2px solid #e1e8ed;
+    border-radius: 4px;
+    font-size: 0.875rem;
+    background-color: white;
+    min-width: 100px;
+}
+
+.edit-category-input:focus {
     outline: none;
     border-color: #3498db;
 }
@@ -253,8 +366,88 @@ h1 {
     }
 }
 
+/* Edit Mode Styles */
+.todo-actions {
+    display: flex;
+    gap: 0.5rem;
+    align-items: center;
+}
+
+.edit-btn {
+    background: none;
+    border: none;
+    font-size: 1rem;
+    cursor: pointer;
+    padding: 0.25rem;
+    border-radius: 4px;
+    transition: background-color 0.3s ease;
+}
+
+.edit-btn:hover {
+    background-color: #f8f9fa;
+}
+
 .delete-btn {
-    background-color: #e74c3c;
+    background: none;
+    border: none;
+    font-size: 1rem;
+    cursor: pointer;
+    padding: 0.25rem;
+    border-radius: 4px;
+    transition: background-color 0.3s ease;
+}
+
+.delete-btn:hover {
+    background-color: #fee2e2;
+}
+
+.edit-mode {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    width: 100%;
+}
+
+.edit-row {
+    display: flex;
+    gap: 0.5rem;
+    align-items: center;
+}
+
+.edit-text-input {
+    flex: 1;
+    padding: 0.5rem;
+    border: 2px solid #e1e8ed;
+    border-radius: 4px;
+    font-size: 1rem;
+}
+
+.edit-text-input:focus {
+    outline: none;
+    border-color: #3498db;
+}
+
+.edit-priority-select, .edit-due-date-input {
+    padding: 0.5rem;
+    border: 2px solid #e1e8ed;
+    border-radius: 4px;
+    font-size: 0.875rem;
+    background-color: white;
+}
+
+.edit-priority-select:focus, .edit-due-date-input:focus {
+    outline: none;
+    border-color: #3498db;
+}
+
+.edit-actions {
+    display: flex;
+    gap: 0.5rem;
+    align-items: center;
+}
+
+.save-btn {
+    background-color: #28a745;
     color: white;
     border: none;
     padding: 0.5rem 1rem;
@@ -264,8 +457,34 @@ h1 {
     transition: background-color 0.3s ease;
 }
 
-.delete-btn:hover {
-    background-color: #c0392b;
+.save-btn:hover {
+    background-color: #218838;
+}
+
+.cancel-btn {
+    background-color: #6c757d;
+    color: white;
+    border: none;
+    padding: 0.5rem 1rem;
+    border-radius: 4px;
+    font-size: 0.875rem;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
+.cancel-btn:hover {
+    background-color: #5a6268;
+}
+
+.todo-text {
+    cursor: pointer;
+    padding: 0.25rem;
+    border-radius: 4px;
+    transition: background-color 0.3s ease;
+}
+
+.todo-text:hover {
+    background-color: #f8f9fa;
 }
 
 @media (max-width: 480px) {
@@ -281,8 +500,9 @@ h1 {
         font-size: 2rem;
     }
     
-    .todo-form {
+    .form-row {
         flex-direction: column;
+        gap: 0.75rem;
     }
     
     .todo-item {

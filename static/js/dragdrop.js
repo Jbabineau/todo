@@ -107,8 +107,79 @@ document.addEventListener('DOMContentLoaded', function() {
     // Handle scroll-to-last trigger
     todoList.addEventListener('scroll-to-last', scrollToLastItem);
 
+    // Edit mode event listeners
+    function addEditListeners() {
+        // Click on todo text to edit
+        document.querySelectorAll('.todo-text.editable').forEach(text => {
+            text.addEventListener('click', function() {
+                const todoId = this.dataset.todoId;
+                editTodo(todoId);
+            });
+        });
+
+        // Click on edit button
+        document.querySelectorAll('.edit-btn').forEach(btn => {
+            btn.addEventListener('click', function() {
+                const todoId = this.dataset.todoId;
+                editTodo(todoId);
+            });
+        });
+
+        // Click on cancel button
+        document.querySelectorAll('.cancel-btn').forEach(btn => {
+            btn.addEventListener('click', function() {
+                const todoId = this.dataset.todoId;
+                cancelEdit(todoId);
+            });
+        });
+    }
+
+    // Initialize edit listeners
+    addEditListeners();
+
     // Re-add listeners when new todos are added via HTMX
     document.body.addEventListener('htmx:afterSwap', function(evt) {
         addDragListeners();
+        addEditListeners();
     });
 });
+
+// Edit mode functions
+function editTodo(todoId) {
+    const todoItem = document.getElementById(`todo-${todoId}`);
+    const viewMode = todoItem.querySelector('.view-mode');
+    const editMode = todoItem.querySelector('.edit-mode');
+    const actions = todoItem.querySelector('.todo-actions');
+    
+    // Hide view mode and actions, show edit mode
+    viewMode.style.display = 'none';
+    actions.style.display = 'none';
+    editMode.style.display = 'block';
+    
+    // Focus on the text input
+    const textInput = editMode.querySelector('input[name="text"]');
+    textInput.focus();
+    textInput.select();
+    
+    // Disable dragging while editing
+    todoItem.draggable = false;
+}
+
+function cancelEdit(todoId) {
+    const todoItem = document.getElementById(`todo-${todoId}`);
+    const viewMode = todoItem.querySelector('.view-mode');
+    const editMode = todoItem.querySelector('.edit-mode');
+    const actions = todoItem.querySelector('.todo-actions');
+    
+    // Show view mode and actions, hide edit mode
+    viewMode.style.display = 'block';
+    actions.style.display = 'flex';
+    editMode.style.display = 'none';
+    
+    // Re-enable dragging
+    todoItem.draggable = true;
+    
+    // Reset form to original values (form will reset automatically)
+    const form = editMode;
+    form.reset();
+}

@@ -11,12 +11,14 @@ import (
 )
 
 type Todo struct {
-	ID        int       `json:"id"`
-	Text      string    `json:"text"`
-	Priority  string    `json:"priority"`
-	SortOrder int       `json:"sort_order"`
-	Completed bool      `json:"completed"`
-	CreatedAt time.Time `json:"created_at"`
+	ID        int        `json:"id"`
+	Text      string     `json:"text"`
+	Priority  string     `json:"priority"`
+	Category  string     `json:"category"`
+	DueDate   *time.Time `json:"due_date,omitempty"`
+	SortOrder int        `json:"sort_order"`
+	Completed bool       `json:"completed"`
+	CreatedAt time.Time  `json:"created_at"`
 }
 
 type TodoStore struct {
@@ -36,7 +38,7 @@ func NewTodoStore() *TodoStore {
 	return store
 }
 
-func (ts *TodoStore) AddTodo(text, priority string) Todo {
+func (ts *TodoStore) AddTodo(text, priority, category string, dueDate *time.Time) Todo {
 	ts.mu.Lock()
 	defer ts.mu.Unlock()
 	
@@ -45,6 +47,8 @@ func (ts *TodoStore) AddTodo(text, priority string) Todo {
 		ID:        ts.nextID,
 		Text:      text,
 		Priority:  priority,
+		Category:  category,
+		DueDate:   dueDate,
 		SortOrder: sortOrder,
 		Completed: false,
 		CreatedAt: time.Now(),
@@ -92,6 +96,23 @@ func (ts *TodoStore) DeleteTodo(id int) bool {
 	for i, todo := range ts.todos {
 		if todo.ID == id {
 			ts.todos = append(ts.todos[:i], ts.todos[i+1:]...)
+			ts.saveToFileAsync()
+			return true
+		}
+	}
+	return false
+}
+
+func (ts *TodoStore) UpdateTodo(id int, text, priority, category string, dueDate *time.Time) bool {
+	ts.mu.Lock()
+	defer ts.mu.Unlock()
+	
+	for i, todo := range ts.todos {
+		if todo.ID == id {
+			ts.todos[i].Text = text
+			ts.todos[i].Priority = priority
+			ts.todos[i].Category = category
+			ts.todos[i].DueDate = dueDate
 			ts.saveToFileAsync()
 			return true
 		}
