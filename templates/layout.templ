@@ -1,6 +1,6 @@
 package templates
 
-templ Layout(title string) {
+templ Layout(title, version string) {
 	<!DOCTYPE html>
 	<html lang="en">
 	<head>
@@ -8,8 +8,8 @@ templ Layout(title string) {
 		<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
 		<title>{title}</title>
 		<script src="https://unpkg.com/htmx.org@1.9.10"></script>
-		<link href="/static/css/styles.css" rel="stylesheet"/>
-		<script src="/static/js/dragdrop.js"></script>
+		<link href={ "/static/css/styles.css?v=" + version } rel="stylesheet"/>
+		<script src={ "/static/js/dragdrop.js?v=" + version }></script>
 	</head>
 	<body>
 		<div class="container">

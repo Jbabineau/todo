@@ -10,12 +10,18 @@ type Todo struct {
 	Completed bool
 }
 
-templ TodoApp(todos []Todo) {
-	@Layout("Todo App") {
+templ TodoApp(todos []Todo, version string) {
+	@Layout("Todo App", version) {
 		<div class="todo-app">
 			<h1>Todo App</h1>
 			
-			<form hx-post="/todos" hx-target="#todo-list" hx-swap="beforeend" class="todo-form">
+			<form 
+				hx-post="/todos" 
+				hx-target="#todo-list" 
+				hx-swap="beforeend"
+				hx-on::after-request="this.reset(); htmx.trigger(htmx.find('#todo-list'), 'scroll-to-last')"
+				class="todo-form"
+			>
 				<input type="text" name="text" placeholder="Add a new todo..." required class="todo-input"/>
 				<select name="priority" class="priority-select">
 					<option value="low">Low</option>
