@@ -29,6 +29,8 @@ func (h *Handlers) HomeHandler(w http.ResponseWriter, r *http.Request) {
 			ID:        todo.ID,
 			Text:      todo.Text,
 			Priority:  todo.Priority,
+			Category:  todo.Category,
+			DueDate:   todo.DueDate,
 			SortOrder: todo.SortOrder,
 			Completed: todo.Completed,
 		}
@@ -54,11 +56,23 @@ func (h *Handlers) AddTodoHandler(w http.ResponseWriter, r *http.Request) {
 		priority = "medium"
 	}
 
-	todo := h.store.AddTodo(text, priority)
+	category := r.FormValue("category")
+
+	var dueDate *time.Time
+	dueDateStr := r.FormValue("due_date")
+	if dueDateStr != "" {
+		if parsed, err := time.Parse("2006-01-02", dueDateStr); err == nil {
+			dueDate = &parsed
+		}
+	}
+
+	todo := h.store.AddTodo(text, priority, category, dueDate)
 	templateTodo := templates.Todo{
 		ID:        todo.ID,
 		Text:      todo.Text,
 		Priority:  todo.Priority,
+		Category:  todo.Category,
+		DueDate:   todo.DueDate,
 		SortOrder: todo.SortOrder,
 		Completed: todo.Completed,
 	}
@@ -91,6 +105,8 @@ func (h *Handlers) ToggleTodoHandler(w http.ResponseWriter, r *http.Request) {
 				ID:        todo.ID,
 				Text:      todo.Text,
 				Priority:  todo.Priority,
+				Category:  todo.Category,
+				DueDate:   todo.DueDate,
 				SortOrder: todo.SortOrder,
 				Completed: todo.Completed,
 			}
@@ -120,6 +136,64 @@ func (h *Handlers) DeleteTodoHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	w.WriteHeader(http.StatusOK)
+}
+
+func (h *Handlers) UpdateTodoHandler(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodPut {
+		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+		return
+	}
+
+	idStr := r.PathValue("id")
+	id, err := strconv.Atoi(idStr)
+	if err != nil {
+		http.Error(w, "Invalid todo ID", http.StatusBadRequest)
+		return
+	}
+
+	text := r.FormValue("text")
+	if text == "" {
+		http.Error(w, "Todo text is required", http.StatusBadRequest)
+		return
+	}
+
+	priority := r.FormValue("priority")
+	if priority == "" {
+		priority = "medium"
+	}
+
+	category := r.FormValue("category")
+
+	var dueDate *time.Time
+	dueDateStr := r.FormValue("due_date")
+	if dueDateStr != "" {
+		if parsed, err := time.Parse("2006-01-02", dueDateStr); err == nil {
+			dueDate = &parsed
+		}
+	}
+
+	if !h.store.UpdateTodo(id, text, priority, category, dueDate) {
+		http.Error(w, "Todo not found", http.StatusNotFound)
+		return
+	}
+
+	todos := h.store.GetTodos()
+	for _, todo := range todos {
+		if todo.ID == id {
+			templateTodo := templates.Todo{
+				ID:        todo.ID,
+				Text:      todo.Text,
+				Priority:  todo.Priority,
+				Category:  todo.Category,
+				DueDate:   todo.DueDate,
+				SortOrder: todo.SortOrder,
+				Completed: todo.Completed,
+			}
+			component := templates.TodoItem(templateTodo)
+			templ.Handler(component).ServeHTTP(w, r)
+			return
+		}
+	}
 }
 
 func (h *Handlers) ReorderTodosHandler(w http.ResponseWriter, r *http.Request) {

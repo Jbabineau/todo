@@ -18,6 +18,7 @@ func main() {
 
 	mux.HandleFunc("/", handlers.HomeHandler)
 	mux.HandleFunc("POST /todos", handlers.AddTodoHandler)
+	mux.HandleFunc("PUT /todos/{id}", handlers.UpdateTodoHandler)
 	mux.HandleFunc("POST /todos/reorder", handlers.ReorderTodosHandler)
 	mux.HandleFunc("PATCH /todos/{id}/toggle", handlers.ToggleTodoHandler)
 	mux.HandleFunc("DELETE /todos/{id}", handlers.DeleteTodoHandler)

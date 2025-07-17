@@ -1,11 +1,48 @@
 package templates
 
-import "fmt"
+import (
+	"fmt"
+	"strings"
+	"time"
+)
+
+func getDueDateClass(dueDate time.Time) string {
+	now := time.Now()
+	today := time.Date(now.Year(), now.Month(), now.Day(), 0, 0, 0, 0, now.Location())
+	due := time.Date(dueDate.Year(), dueDate.Month(), dueDate.Day(), 0, 0, 0, 0, dueDate.Location())
+	
+	daysDiff := int(due.Sub(today).Hours() / 24)
+	
+	if daysDiff < 0 {
+		return "overdue"
+	} else if daysDiff == 0 {
+		return "due-today"
+	} else if daysDiff <= 3 {
+		return "due-soon"
+	}
+	return "due-later"
+}
+
+func splitCategories(category string) []string {
+	if category == "" {
+		return []string{}
+	}
+	categories := strings.Fields(strings.TrimSpace(category))
+	var result []string
+	for _, cat := range categories {
+		if cat != "" {
+			result = append(result, cat)
+		}
+	}
+	return result
+}
 
 type Todo struct {
 	ID        int
 	Text      string
 	Priority  string
+	Category  string
+	DueDate   *time.Time
 	SortOrder int
 	Completed bool
 }
@@ -22,13 +59,21 @@ templ TodoApp(todos []Todo, version string) {
 				hx-on::after-request="this.reset(); htmx.trigger(htmx.find('#todo-list'), 'scroll-to-last')"
 				class="todo-form"
 			>
-				<input type="text" name="text" placeholder="Add a new todo..." required class="todo-input"/>
-				<select name="priority" class="priority-select">
-					<option value="low">Low</option>
-					<option value="medium" selected>Medium</option>
-					<option value="high">High</option>
-				</select>
-				<button type="submit" class="add-btn">Add</button>
+				<div class="form-row">
+					<input type="text" name="text" placeholder="Add a new todo..." required class="todo-input"/>
+				</div>
+				<div class="form-row">
+					<select name="priority" class="priority-select">
+						<option value="low">Low</option>
+						<option value="medium" selected>Medium</option>
+						<option value="high">High</option>
+					</select>
+					<input type="text" name="category" placeholder="Categories/Tags (space separated)" class="category-input"/>
+					<input type="date" name="due_date" class="due-date-input" placeholder="Due date (optional)"/>
+				</div>
+				<div class="form-row">
+					<button type="submit" class="add-btn">Add Todo</button>
+				</div>
 			</form>
 			
 			<div class="actions-bar">
@@ -74,18 +119,67 @@ templ TodoItem(todo Todo) {
 			class="todo-checkbox"
 		/>
 		<div class="drag-handle">⋮⋮</div>
-		<div class="todo-content">
-			<span class="todo-text">{ todo.Text }</span>
-			<span class={ "priority-badge", "priority-" + todo.Priority }>{ todo.Priority }</span>
+		
+		<!-- View Mode -->
+		<div class="todo-content view-mode">
+			<div class="todo-text editable" data-todo-id={ fmt.Sprintf("%d", todo.ID) }>{ todo.Text }</div>
+			<div class="todo-meta">
+				<span class={ "priority-badge", "priority-" + todo.Priority }>{ todo.Priority }</span>
+				for _, category := range splitCategories(todo.Category) {
+					<span class="category-badge">🏷️ { category }</span>
+				}
+				if todo.DueDate != nil {
+					<span class={ "due-date-badge", getDueDateClass(*todo.DueDate) }>
+						📅 { todo.DueDate.Format("Jan 2") }
+					</span>
+				}
+			</div>
 		</div>
-		<input type="hidden" name="todo-order" value={ fmt.Sprintf("%d", todo.ID) }/>
-		<button 
-			hx-delete={ "/todos/" + fmt.Sprintf("%d", todo.ID) }
+		
+		<!-- Edit Mode (Hidden by default) -->
+		<form 
+			class="todo-content edit-mode" 
+			style="display: none;"
+			hx-put={ "/todos/" + fmt.Sprintf("%d", todo.ID) }
 			hx-target={ "#todo-" + fmt.Sprintf("%d", todo.ID) }
 			hx-swap="outerHTML"
-			class="delete-btn"
 		>
-			Delete
-		</button>
+			<div class="edit-row">
+				<input type="text" name="text" value={ todo.Text } class="edit-text-input" required/>
+			</div>
+			<div class="edit-row">
+				<select name="priority" class="edit-priority-select">
+					<option value="low" selected?={ todo.Priority == "low" }>Low</option>
+					<option value="medium" selected?={ todo.Priority == "medium" }>Medium</option>
+					<option value="high" selected?={ todo.Priority == "high" }>High</option>
+				</select>
+				<input type="text" name="category" value={ todo.Category } placeholder="Categories/Tags (space separated)" class="edit-category-input"/>
+				<input 
+					type="date" 
+					name="due_date" 
+					if todo.DueDate != nil {
+						value={ todo.DueDate.Format("2006-01-02") }
+					}
+					class="edit-due-date-input"
+				/>
+			</div>
+			<div class="edit-actions">
+				<button type="submit" class="save-btn">Save</button>
+				<button type="button" class="cancel-btn" data-todo-id={ fmt.Sprintf("%d", todo.ID) }>Cancel</button>
+			</div>
+		</form>
+		
+		<input type="hidden" name="todo-order" value={ fmt.Sprintf("%d", todo.ID) }/>
+		<div class="todo-actions">
+			<button class="edit-btn" data-todo-id={ fmt.Sprintf("%d", todo.ID) }>✏️</button>
+			<button 
+				hx-delete={ "/todos/" + fmt.Sprintf("%d", todo.ID) }
+				hx-target={ "#todo-" + fmt.Sprintf("%d", todo.ID) }
+				hx-swap="outerHTML"
+				class="delete-btn"
+			>
+				🗑️
+			</button>
+		</div>
 	</div>
 }
