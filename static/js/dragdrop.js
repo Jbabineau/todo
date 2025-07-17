@@ -86,6 +86,27 @@ document.addEventListener('DOMContentLoaded', function() {
     // Initialize drag listeners
     addDragListeners();
 
+    // Scroll to last item function
+    function scrollToLastItem() {
+        const todoItems = document.querySelectorAll('.todo-item');
+        if (todoItems.length > 0) {
+            const lastItem = todoItems[todoItems.length - 1];
+            lastItem.scrollIntoView({ 
+                behavior: 'smooth', 
+                block: 'center'
+            });
+            
+            // Add a brief highlight effect
+            lastItem.classList.add('newly-added');
+            setTimeout(() => {
+                lastItem.classList.remove('newly-added');
+            }, 2000);
+        }
+    }
+
+    // Handle scroll-to-last trigger
+    todoList.addEventListener('scroll-to-last', scrollToLastItem);
+
     // Re-add listeners when new todos are added via HTMX
     document.body.addEventListener('htmx:afterSwap', function(evt) {
         addDragListeners();

@@ -233,6 +233,26 @@ h1 {
     font-weight: 500;
 }
 
+.newly-added {
+    background-color: #d4edda !important;
+    border-color: #c3e6cb !important;
+    animation: highlightFade 2s ease-out;
+}
+
+@keyframes highlightFade {
+    0% {
+        background-color: #d4edda;
+        transform: scale(1.02);
+    }
+    50% {
+        background-color: #d4edda;
+    }
+    100% {
+        background-color: inherit;
+        transform: scale(1);
+    }
+}
+
 .delete-btn {
     background-color: #e74c3c;
     color: white;

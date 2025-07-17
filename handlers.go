@@ -13,11 +13,12 @@ import (
 )
 
 type Handlers struct {
-	store *TodoStore
+	store   *TodoStore
+	version string
 }
 
-func NewHandlers(store *TodoStore) *Handlers {
-	return &Handlers{store: store}
+func NewHandlers(store *TodoStore, version string) *Handlers {
+	return &Handlers{store: store, version: version}
 }
 
 func (h *Handlers) HomeHandler(w http.ResponseWriter, r *http.Request) {
@@ -32,7 +33,7 @@ func (h *Handlers) HomeHandler(w http.ResponseWriter, r *http.Request) {
 			Completed: todo.Completed,
 		}
 	}
-	component := templates.TodoApp(templateTodos)
+	component := templates.TodoApp(templateTodos, h.version)
 	templ.Handler(component).ServeHTTP(w, r)
 }
 
