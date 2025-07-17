@@ -141,6 +141,25 @@ document.addEventListener('DOMContentLoaded', function() {
     document.body.addEventListener('htmx:afterSwap', function(evt) {
         addDragListeners();
         addEditListeners();
+        
+        // Handle tab switching after toggle
+        /*if (evt.detail.target.id === 'tab-contents') {
+            const activeButton = document.querySelector('.tab-button.active');
+            const currentlyOnCompletedTab = activeButton && activeButton.name === 'completed-tab-button';
+            const hasCompletedItems = document.querySelectorAll('#completed-tab .todo-item').length > 0;
+            
+            console.log(activeButton.name, hasCompletedItems)
+            // If we're on completed tab but there are no completed items left, switch to active
+            if (currentlyOnCompletedTab && !hasCompletedItems) {
+                showTabByName('active');
+            } else {
+                // Otherwise, restore the previously active tab
+                if (activeButton) {
+                    const activeTabName = activeButton.name === 'active-tab-button' ? 'active' : 'completed';
+                    showTabByName(activeTabName);
+                }
+            }
+        }*/
     });
 });
 
@@ -182,4 +201,46 @@ function cancelEdit(todoId) {
     // Reset form to original values (form will reset automatically)
     const form = editMode;
     form.reset();
+}
+
+// Tab switching functionality
+function showTab(tabName) {
+    // Hide all tab contents
+    document.querySelectorAll('.tab-content').forEach(tab => {
+        tab.classList.remove('active');
+    });
+    
+    // Remove active class from all tab buttons
+    document.querySelectorAll('.tab-button').forEach(button => {
+        button.classList.remove('active');
+    });
+    
+    // Show selected tab content
+    document.getElementById(tabName + '-tab').classList.add('active');
+    
+    // Add active class to clicked button
+    event.target.classList.add('active');
+}
+
+// Helper function to show tab by name (for restoring after HTMX)
+function showTabByName(tabName) {
+    // Hide all tab contents
+    document.querySelectorAll('.tab-content').forEach(tab => {
+        tab.classList.remove('active');
+    });
+    
+    // Remove active class from all tab buttons
+    document.querySelectorAll('.tab-button').forEach(button => {
+        button.classList.remove('active');
+    });
+    
+    // Show selected tab content
+    document.getElementById(tabName + '-tab').classList.add('active');
+    
+    // Add active class to corresponding button using name attribute
+    const buttonName = tabName === 'active' ? 'active-tab-button' : 'completed-tab-button';
+    const buttonToActivate = document.querySelector(`button[name="${buttonName}"]`);
+    if (buttonToActivate) {
+        buttonToActivate.classList.add('active');
+    }
 }

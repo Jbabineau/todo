@@ -99,22 +99,21 @@ func (h *Handlers) ToggleTodoHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	todos := h.store.GetTodos()
-	for _, todo := range todos {
-		if todo.ID == id {
-			templateTodo := templates.Todo{
-				ID:        todo.ID,
-				Text:      todo.Text,
-				Priority:  todo.Priority,
-				Category:  todo.Category,
-				DueDate:   todo.DueDate,
-				SortOrder: todo.SortOrder,
-				Completed: todo.Completed,
-			}
-			component := templates.TodoItem(templateTodo)
-			templ.Handler(component).ServeHTTP(w, r)
-			return
+	templateTodos := make([]templates.Todo, len(todos))
+	for i, todo := range todos {
+		templateTodos[i] = templates.Todo{
+			ID:        todo.ID,
+			Text:      todo.Text,
+			Priority:  todo.Priority,
+			Category:  todo.Category,
+			DueDate:   todo.DueDate,
+			SortOrder: todo.SortOrder,
+			Completed: todo.Completed,
 		}
 	}
+	component := templates.TabContents(templateTodos)
+
+	templ.Handler(component).ServeHTTP(w, r)
 }
 
 func (h *Handlers) DeleteTodoHandler(w http.ResponseWriter, r *http.Request) {
@@ -210,7 +209,7 @@ func (h *Handlers) ReorderTodosHandler(w http.ResponseWriter, r *http.Request) {
 
 	todoIDStrs := strings.Split(todoIDsStr, ",")
 	todoIDs := make([]int, len(todoIDStrs))
-	
+
 	for i, idStr := range todoIDStrs {
 		id, err := strconv.Atoi(strings.TrimSpace(idStr))
 		if err != nil {
@@ -236,22 +235,22 @@ func (h *Handlers) ExportHandler(w http.ResponseWriter, r *http.Request) {
 
 	timestamp := time.Now().Format("2006-01-02_15-04-05")
 	filename := fmt.Sprintf("todos_export_%s.json", timestamp)
-	
+
 	w.Header().Set("Content-Type", "application/json")
 	w.Header().Set("Content-Disposition", fmt.Sprintf("attachment; filename=%s", filename))
-	
+
 	todos := h.store.GetTodos()
 	todoData := TodoData{
 		Todos:  todos,
 		NextID: h.store.nextID,
 	}
-	
+
 	data, err := json.MarshalIndent(todoData, "", "  ")
 	if err != nil {
 		http.Error(w, "Error generating export", http.StatusInternalServerError)
 		return
 	}
-	
+
 	w.Write(data)
 }
 
