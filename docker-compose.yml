@@ -1,0 +1,28 @@
+version: '3.8'
+
+services:
+  todo-app:
+    build: .
+    container_name: todo-app
+    restart: unless-stopped
+    ports:
+      - "8080:8080"
+    volumes:
+      - ./data:/data
+    environment:
+      - TODOS_FILE=/data/todos.json
+    networks:
+      - proxy-network
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.todo-app.rule=Host(`todo.jimmybabs.com`)"
+      - "traefik.http.routers.todo-app.tls=true"
+      - "traefik.http.services.todo-app.loadbalancer.server.port=8080"
+
+networks:
+  proxy-network:
+    external: true
+
+volumes:
+  todo-data:
+    driver: local
